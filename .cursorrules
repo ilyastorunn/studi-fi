@@ -1,0 +1,390 @@
+# Deep Work - Development Rules & Guidelines
+
+## 📋 Proje Genel Bilgileri
+
+**Proje Adı:** studi-fi  
+**Tip:** Single Page Application (SPA)  
+**Amaç:** Lo-fi müzik eşliğinde focus timer deneyimi  
+**Hedef Kitle:** Uzaktan çalışanlar, öğrenciler, yaratıcılar  
+**Tasarım Dili:** Lo-fi aesthetic + Glassmorphism
+
+---
+
+## 🎨 Tasarım Sistem Kuralları
+
+### Renk Paleti
+```css
+/* Ana Renkler */
+--text-primary: #15142F;           /* Ana metin rengi */
+--glass-bg: #EAEAF2;              /* Glass card background */
+--glass-opacity: 0.3;             /* %30 opaklık */
+
+/* Accent Colors */
+--accent-blue: #4A90E2;           /* Player controls */
+--accent-green: #27AE60;          /* Play button */
+--accent-red: #E74C3C;            /* Stop/Reset */
+--accent-purple: #8E44AD;         /* Timer active */
+
+/* Background */
+--bg-gradient: linear-gradient(lo-fi warm tones);
+```
+
+### Typography Sistem
+```css
+/* Font Sizes */
+--timer-display: 64px;            /* Ana timer */
+--song-artist: 16px;              /* Şarkı/sanatçı */
+--time-display: 14px;             /* Süre göstergeleri */
+
+/* Font Families */
+--font-logo: 'Caveat', cursive;   /* studi-fi logo */
+--font-ui: 'Inter', sans-serif;   /* UI elementleri */
+```
+
+### Spacing & Layout
+```css
+/* Border Radius */
+--radius-large: 50px;             /* Ana kartlar */
+--radius-medium: 25px;            /* Kapak fotoğrafı */
+--radius-small: 12px;             /* Butonlar */
+
+/* Card Dimensions */
+--timer-card: 672px × 240px;      /* Ana timer kartı */
+--player-card: 465px × 160px;     /* Müzik player kartı */
+```
+
+---
+
+## 🧩 Component Specifications
+
+### Header Component
+```
+Position: Fixed top
+Elements: 
+  - Logo (left): "studi-fi" with Caveat font
+  - Auth (right): "login" button or user profile
+Spacing: 2rem padding
+Background: Transparent
+```
+
+### Timer Card (672×240)
+```
+Background: #EAEAF2 at 30% opacity
+Border-radius: 50px
+Content:
+  - Timer Display: 64px font, #15142F color
+  - Control Buttons: 48×48px (Play/Pause/Reset)
+  - Preset Cards: 135×47px each
+  - Layout: Centered, stacked vertically
+```
+
+### Player Card (465×160)
+```
+Background: #EAEAF2 at 30% opacity  
+Border-radius: 50px
+Elements:
+  - Album Art: 110×110px, 25px radius
+  - Song Info: 16px artist/song name
+  - Controls: 
+    * Previous/Next: 30×30px
+    * Play/Pause: 42×42px  
+    * Volume: 32×32px
+  - Progress: 87×4px bar
+  - Time: 14px font
+```
+
+### Button States & Interactions
+```css
+/* Button Hierarchy */
+.btn-primary { 42×42px }    /* Main play/pause */
+.btn-secondary { 48×48px }  /* Timer controls */
+.btn-small { 30×30px }      /* Navigation */
+.btn-icon { 32×32px }       /* Volume, settings */
+
+/* States */
+:hover { transform: scale(1.05); opacity: 0.8; }
+:active { transform: scale(0.95); }
+.disabled { opacity: 0.4; pointer-events: none; }
+```
+
+---
+
+## ⚙️ Fonksiyonel Requirements
+
+### Timer System
+- **Format**: MM:SS display (00:00)
+- **Presets**: 60min, 40min, 25min, 20min + Custom
+- **States**: Idle → Running → Paused → Completed
+- **Notifications**: Browser notification on completion
+- **Session Tracking**: Count completed sessions
+
+### Music Player  
+- **Auto-play**: Start with page load
+- **Playlist**: Lo-fi/ambient tracks (royalty-free)
+- **Controls**: Play/Pause, Previous, Next, Volume
+- **Progress**: Real-time update every second
+- **Info Display**: Song title, artist name
+- **Album Art**: 110×110px with 25px radius
+
+### Authentication
+- **States**: Logged out (login button) / Logged in (profile)
+- **Profile**: User initials in circle
+- **Persistence**: Session storage only (no localStorage)
+
+---
+
+## 💻 Technical Stack Recommendations
+
+### Framework Options
+
+#### 1. Next.js 14 + App Router (ÖNERİLEN)
+```bash
+npx create-next-app@latest studi-fi
+```
+**Pros:**
+- Server-side rendering için hazır
+- Built-in optimizations
+- Cursor AI ile mükemmel uyum
+- TypeScript ready
+
+#### 2. Vite + React 18
+```bash
+npm create vite@latest studi-fi -- --template react-ts
+```
+**Pros:**  
+- Çok hızlı development
+- Minimal setup
+- Lightweight bundle
+
+### UI Framework: shadcn/ui (Kesinlikle Önerilen)
+```bash
+npx shadcn-ui@latest init
+npx shadcn-ui@latest add button card dialog
+```
+
+### State Management
+```bash
+# Zustand (önerilen - minimal)
+npm install zustand
+
+# Veya Jotai (atomic state)
+npm install jotai
+```
+
+### Audio Library
+```bash
+# Howler.js (ses yönetimi)
+npm install howler
+npm install @types/howler
+
+# Veya React-audio-player
+npm install react-audio-player
+```
+
+### Utility Libraries
+```bash
+npm install clsx                    # Conditional classes
+npm install tailwind-merge          # Tailwind class merging  
+npm install lucide-react           # Icons
+npm install framer-motion          # Animations (optional)
+```
+
+---
+
+## 📁 Dosya Yapısı
+
+```
+src/
+├── components/
+│   ├── ui/                 # shadcn components
+│   ├── Timer/
+│   │   ├── TimerCard.tsx
+│   │   ├── TimerDisplay.tsx
+│   │   └── TimerPresets.tsx
+│   ├── Player/
+│   │   ├── PlayerCard.tsx
+│   │   ├── PlayerControls.tsx
+│   │   └── ProgressBar.tsx
+│   └── Layout/
+│       ├── Header.tsx
+│       └── Background.tsx
+├── hooks/
+│   ├── useTimer.ts
+│   ├── useAudio.ts
+│   └── useAuth.ts
+├── stores/                 # Zustand stores
+│   ├── timerStore.ts
+│   ├── playerStore.ts
+│   └── authStore.ts
+├── lib/
+│   ├── utils.ts
+│   └── constants.ts
+└── assets/
+    ├── audio/              # Lo-fi tracks
+    └── images/             # Album covers
+```
+
+---
+
+## 🎵 Audio Implementation
+
+### Lo-fi Playlist Structure
+```typescript
+interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  duration: number;
+  src: string;
+  cover: string;
+}
+
+const playlist: Track[] = [
+  {
+    id: 'track1',
+    title: 'Midnight Coffee',
+    artist: 'Lo-fi Collective',
+    duration: 223, // seconds
+    src: '/audio/midnight-coffee.mp3',
+    cover: '/images/covers/cover1.jpg'
+  }
+];
+```
+
+### Audio Hook Pattern
+```typescript
+const useAudio = () => {
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const [progress, setProgress] = useState(0);
+  
+  // Howler.js implementation
+  return { isPlaying, currentTrack, progress, play, pause, next, previous };
+};
+```
+
+---
+
+## 📱 Responsive Design Rules
+
+### Breakpoints
+```css
+/* Mobile First Approach */
+--mobile: 320px - 768px
+--tablet: 768px - 1024px  
+--desktop: 1024px+
+```
+
+### Component Scaling
+```css
+/* Timer Card */
+@media (max-width: 768px) {
+  .timer-card { 
+    width: 90vw; 
+    max-width: 400px;
+    padding: 1.5rem;
+  }
+  .timer-display { font-size: 48px; }
+  .timer-buttons { size: 40x40px; }
+}
+
+/* Player Card */
+@media (max-width: 768px) {
+  .player-card { 
+    width: 90vw; 
+    max-width: 350px;
+  }
+  .album-art { size: 80x80px; }
+}
+```
+
+---
+
+## 🚀 Performance Rules
+
+### Bundle Optimization
+- **Audio lazy loading**: Sadece gerekli tracks
+- **Image optimization**: WebP format, next/image
+- **Code splitting**: Route-based chunks
+- **Tree shaking**: Unused kod elimination
+
+### Audio Performance
+```typescript
+// Pre-load next track
+const preloadNext = () => {
+  const nextTrack = playlist[currentTrack + 1];
+  if (nextTrack) {
+    new Audio(nextTrack.src).load();
+  }
+};
+```
+
+---
+
+## 🎯 Cursor AI Integration Tips
+
+### Cursor-Friendly Practices
+1. **Clear component names**: `TimerCard.tsx` not `TC.tsx`
+2. **TypeScript everywhere**: Full type coverage
+3. **JSDoc comments**: AI context için
+4. **Conventional commits**: `feat:`, `fix:`, `style:`
+
+### AI Prompt Patterns
+```
+// Component creation
+"Create a glassmorphism timer card component with these specs: [specs]"
+
+// Styling help  
+"Style this button with glassmorphism effect, 48x48 size, hover animations"
+
+// Logic implementation
+"Implement useTimer hook with play/pause/reset functionality"
+```
+
+---
+
+## ✅ Development Checklist
+
+### Setup Phase
+- [ ] Next.js + TypeScript kurulumu
+- [ ] shadcn/ui konfigürasyonu
+- [ ] Tailwind CSS customization
+- [ ] Zustand store setup
+- [ ] Audio library integration
+
+### Component Phase  
+- [ ] Background component (lo-fi image)
+- [ ] Header component (logo + auth)
+- [ ] TimerCard implementation
+- [ ] PlayerCard implementation
+- [ ] Glassmorphism styling
+
+### Feature Phase
+- [ ] Timer logic (play/pause/reset)
+- [ ] Audio player functionality
+- [ ] Preset timer selection
+- [ ] Progress tracking
+- [ ] Session notifications
+
+### Polish Phase
+- [ ] Responsive design testing
+- [ ] Animation polish
+- [ ] Audio crossfading
+- [ ] Performance optimization
+- [ ] Cursor AI compatibility test
+
+---
+
+## 🔧 Cursor AI Migration Checklist
+
+- [ ] Clean, TypeScript codebase
+- [ ] Component structure documented
+- [ ] Store logic separated
+- [ ] Custom hooks extracted
+- [ ] Constants file organized
+- [ ] README with AI context
+- [ ] .cursorrules file prepared
+
+---
+
+> **Pro Tip:** Cursor AI, TypeScript + shadcn/ui kombinasyonu ile en iyi sonuçları verir. Clean code ve açık component isimleri kullanın!

@@ -1,0 +1,11 @@
+# Lo-fi Background Image Placeholder
+
+Please add your lo-fi.webp background image to this public directory.
+
+The image should:
+- Be named exactly "lo-fi.webp"
+- Cover the full screen as background
+- Be optimized for web (WebP format)
+- Have a lo-fi aesthetic that matches your design
+
+Current fallback: Gradient background will show if image is missing.
