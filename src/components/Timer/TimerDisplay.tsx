@@ -5,18 +5,19 @@ interface TimerDisplayProps {
 }
 
 export function TimerDisplay({ timeLeft }: TimerDisplayProps) {
-  // Format time as MM:SS
+  // Format time as HH:MM:SS
   const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="text-center">
-      <div className="timer-display">
-        {formatTime(timeLeft)}
-      </div>
+    <div
+    // style="font-family:var(--font-comfortaa);font-size:18px;color:#15142F;font-weight:600"
+     className="timer-display text-6xl font-medium text-[#15142F] opacity-80">
+      {formatTime(timeLeft)}
     </div>
   );
 }

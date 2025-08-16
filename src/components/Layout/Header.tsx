@@ -35,10 +35,10 @@ export function Header() {
       <div 
         className="absolute"
         style={{
-          top: '50px',
-          left: '70px',
-          width: '174px',
-          height: '57px',
+          top: '24px',
+          left: '48px',
+          width: '120px',
+          height: '52px',
           backgroundColor: 'rgba(234, 234, 242, 0.3)',
           backdropFilter: 'blur(10px)',
           borderRadius: '50px',
@@ -50,7 +50,7 @@ export function Header() {
         <span 
           style={{
             fontFamily: 'var(--font-comfortaa)',
-            fontSize: '24px',
+            fontSize: '18px',
             color: '#15142F',
             fontWeight: '600'
           }}
@@ -63,10 +63,10 @@ export function Header() {
       <div 
         className="absolute cursor-pointer"
         style={{
-          top: '50px',
-          right: '70px',
-          width: '142px',
-          height: '57px',
+          top: '24px',
+          right: '48px',
+          width: '120px',
+          height: '52px',
           backgroundColor: 'rgba(234, 234, 242, 0.3)',
           backdropFilter: 'blur(10px)',
           borderRadius: '50px',
@@ -79,7 +79,7 @@ export function Header() {
         <span 
           style={{
             fontFamily: 'var(--font-comfortaa)',
-            fontSize: '24px',
+            fontSize: '18px',
             color: '#15142F',
             fontWeight: '600'
           }}

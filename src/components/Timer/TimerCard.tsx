@@ -1,12 +1,11 @@
 'use client';
 
 import { useTimerStore } from '@/stores/timerStore';
-import { TIMER_STATES } from '@/lib/constants';
+import { TIMER_STATES, TIMER_PRESETS } from '@/lib/constants';
 import { TimerDisplay } from './TimerDisplay';
 import { TimerPresets } from './TimerPresets';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 
 export function TimerCard() {
   const {
@@ -46,78 +45,94 @@ export function TimerCard() {
     }
   };
 
+  const selectedMinutes = duration === -1 ? -1 : duration / 60;
+
   return (
-    <Card className="timer-card glass-card p-8 flex flex-col items-center justify-center space-y-6">
-      {/* Timer Display */}
-      <TimerDisplay timeLeft={timeLeft} />
+    <div 
+      className="w-[672px] h-[240px] p-6 flex"
+      style={{
+        backgroundColor: 'rgba(234, 234, 242, 0.3)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '50px',
+      }}
+    >
+      {/* Sol Taraf - Timer Display ve Control Buttons */}
+      <div className="flex-1 flex flex-col items-center justify-center space-y-6">
+        {/* Timer Display */}
+        <div className="flex items-center justify-center">
+          <TimerDisplay timeLeft={timeLeft} />
+        </div>
 
-      {/* Control Buttons */}
-      <div className="flex items-center space-x-4">
-        {/* Play/Pause Button */}
-        <Button
-          onClick={handlePlayPause}
-          size="lg"
-          className={`
-            btn-secondary flex items-center justify-center
-            ${isRunning || isPaused 
-              ? 'bg-[var(--accent-green)] hover:bg-[var(--accent-green)]/80' 
-              : 'bg-[var(--accent-blue)] hover:bg-[var(--accent-blue)]/80'
-            }
-            text-white shadow-lg
-          `}
-        >
-          {isRunning ? (
-            <Pause className="w-5 h-5" />
-          ) : (
-            <Play className="w-5 h-5 ml-0.5" />
-          )}
-        </Button>
+        {/* Control Buttons */}
+        <div className="flex items-center justify-center space-x-3">
+          {/* Start Button */}
+          <Button
+            onClick={isRunning ? pause : start}
+            size="lg"
+            className="w-12 h-12 rounded-full bg-[#0E3C1D] hover:bg-[#0E3C1D]/80 text-white shadow-lg flex items-center justify-center"
+          >
+            {isRunning ? (
+              <Pause className="w-5 h-5" />
+            ) : (
+              <Play className="w-5 h-5 ml-0.5" />
+            )}
+          </Button>
 
-        {/* Reset Button */}
-        <Button
-          onClick={handleReset}
-          size="lg"
-          variant="outline"
-          className="btn-secondary bg-white/20 text-[var(--text-primary)] border-white/30 hover:bg-white/30"
-        >
-          <RotateCcw className="w-5 h-5" />
-        </Button>
+          {/* Stop Button */}
+          <Button
+            onClick={handleReset}
+            size="lg"
+            className="w-12 h-12 rounded-full bg-[#491615] hover:bg-[#491615]/80 text-white shadow-lg flex items-center justify-center"
+          >
+            <RotateCcw className="w-5 h-5" />
+          </Button>
 
-        {/* Completion Indicator */}
-        {isCompleted && (
+          {/* Check Button */}
           <Button
             size="lg"
-            className="btn-secondary bg-[var(--accent-green)] text-white"
-            disabled
+            className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center ${
+              isCompleted 
+                ? 'bg-[var(--accent-green)] text-white' 
+                : 'bg-white/20 text-[var(--text-primary)] border-white/30'
+            }`}
+            disabled={!isCompleted}
           >
             <CheckCircle className="w-5 h-5" />
           </Button>
-        )}
-      </div>
-
-      {/* Timer Presets */}
-      <div className="w-full max-w-sm">
-        <TimerPresets
-          onPresetSelect={handlePresetSelect}
-          selectedDuration={duration}
-          disabled={isRunning}
-        />
-      </div>
-
-      {/* Session Counter */}
-      {sessionCount > 0 && (
-        <div className="text-sm text-[var(--text-primary)]/70 font-medium">
-          Sessions completed: {sessionCount}
         </div>
-      )}
-
-      {/* Status Text */}
-      <div className="text-sm text-[var(--text-primary)]/70 font-medium">
-        {isRunning && 'Focus time is running...'}
-        {isPaused && 'Timer paused'}
-        {isCompleted && 'Great work! Take a break.'}
-        {isIdle && 'Ready to focus?'}
       </div>
-    </Card>
+
+      {/* Sağ Taraf - Preset Buttons */}
+      <div className="flex-1 flex flex-col justify-center space-y-4 pl-6">
+        {/* Preset Buttons Grid - 2x2 */}
+        <div className="grid grid-cols-2 gap-3">
+          {TIMER_PRESETS.map((preset) => (
+            <Button
+              key={preset.value}
+              variant="outline"
+              onClick={() => handlePresetSelect(preset.value)}
+              disabled={isRunning}
+              className={`
+                h-12 rounded-xl text-sm font-medium transition-all duration-200
+                backdrop-blur-md bg-white/10 text-[#15142F] border-none hover:bg-white/20
+                ${selectedMinutes === preset.value ? 'ring-2 ring-[var(--accent-purple)]' : ''}
+                ${isRunning ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
+            >
+              {preset.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Custom Time Button - Full Width */}
+        <Button
+          variant="outline"
+          disabled={isRunning}
+          className="w-full h-12 rounded-xl text-sm border-none font-medium backdrop-blur-md bg-white/10 text-[#15142F] border-white/30 hover:bg-white/20 transition-all duration-200"
+        >
+          set custom time
+        </Button>
+      </div>
+    </div>
   );
 }

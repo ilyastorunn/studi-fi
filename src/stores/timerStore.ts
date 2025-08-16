@@ -27,12 +27,22 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
 
   // Set timer duration (convert minutes to seconds)
   setDuration: (minutes: number) => {
-    const duration = minutes * 60;
-    set({ 
-      duration, 
-      timeLeft: duration,
-      state: TIMER_STATES.IDLE 
-    });
+    if (minutes === -1) {
+      // Infinity mode - set to a very large number (24 hours)
+      const duration = 24 * 60 * 60; // 24 hours in seconds
+      set({ 
+        duration: -1, // Keep -1 to identify infinity mode
+        timeLeft: duration,
+        state: TIMER_STATES.IDLE 
+      });
+    } else {
+      const duration = minutes * 60;
+      set({ 
+        duration, 
+        timeLeft: duration,
+        state: TIMER_STATES.IDLE 
+      });
+    }
   },
 
   // Start timer

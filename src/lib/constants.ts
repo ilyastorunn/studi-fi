@@ -4,10 +4,10 @@
 
 // Timer presets in minutes
 export const TIMER_PRESETS = [
-  { label: '60 min', value: 60 },
-  { label: '40 min', value: 40 },
-  { label: '25 min', value: 25 },
-  { label: '20 min', value: 20 },
+  { label: '25min', value: 25 },
+  { label: '50min', value: 50 },
+  { label: '90min', value: 90 },
+  { label: '∞', value: -1 }, // Infinity mode
 ] as const;
 
 // Timer states
