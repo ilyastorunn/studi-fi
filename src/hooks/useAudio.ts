@@ -40,52 +40,54 @@ export function useAudio() {
     const mockDuration = currentSong.duration;
     setDuration(mockDuration);
 
-    // Create mock Howl instance (since we don't have real audio files)
+    // Create real Howl instance with actual audio files
     try {
       soundRef.current = new Howl({
         src: [currentSong.src],
         html5: true,
         volume: volume,
+        preload: true,
         onload: () => {
           setIsLoading(false);
-          setDuration(soundRef.current?.duration() || mockDuration);
+          const actualDuration = soundRef.current?.duration() || mockDuration;
+          setDuration(actualDuration);
+          console.log(`Audio loaded: ${currentSong.title} - Duration: ${actualDuration}s`);
+          
+          // Auto-play if isPlaying is true
+          if (isPlaying && soundRef.current) {
+            soundRef.current.play();
+          }
         },
-        onloaderror: () => {
-          setError('Failed to load audio');
+        onloaderror: (id, error) => {
+          console.error('Audio load error:', error);
+          setError(`Failed to load: ${currentSong.title}`);
           setIsLoading(false);
-          // Fall back to mock functionality
+          // Fall back to placeholder duration
           setDuration(mockDuration);
         },
         onplay: () => {
+          console.log(`Playing: ${currentSong.title}`);
           // Start progress tracking
           updateProgress();
         },
+        onpause: () => {
+          console.log(`Paused: ${currentSong.title}`);
+        },
         onend: () => {
+          console.log(`Ended: ${currentSong.title} - Auto-playing next`);
           // Auto-play next track
           next();
         },
+        onstop: () => {
+          console.log(`Stopped: ${currentSong.title}`);
+        }
       });
 
-      // If the file doesn't exist, we'll simulate playback
-      if (isPlaying) {
-        // Simulate loading time
-        setTimeout(() => {
-          setIsLoading(false);
-          setDuration(mockDuration);
-          if (isPlaying) {
-            simulatePlayback();
-          }
-        }, 500);
-      }
-
     } catch (err) {
-      setError('Audio not supported');
+      console.error('Howler initialization error:', err);
+      setError('Audio player not supported');
       setIsLoading(false);
-      // Fall back to mock functionality
       setDuration(mockDuration);
-      if (isPlaying) {
-        simulatePlayback();
-      }
     }
 
     return () => {
@@ -95,57 +97,36 @@ export function useAudio() {
     };
   }, [currentTrack, currentSong]);
 
-  // Mock playback simulation for demo
+  // Real audio progress tracking
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const simulatePlayback = () => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-    }
-
-    let currentTime = 0;
-    const duration = currentSong?.duration || 180;
-
-    progressIntervalRef.current = setInterval(() => {
-      if (isPlaying && currentTime < duration) {
-        currentTime += 1;
-        setCurrentTime(currentTime);
-      } else if (currentTime >= duration) {
-        next();
-      }
-    }, 1000);
-  };
 
   const updateProgress = () => {
     if (!soundRef.current || !isPlaying) return;
 
-    const seek = soundRef.current.seek();
-    setCurrentTime(typeof seek === 'number' ? seek : 0);
+    try {
+      const seek = soundRef.current.seek();
+      const currentTime = typeof seek === 'number' ? seek : 0;
+      setCurrentTime(currentTime);
 
-    if (isPlaying) {
-      requestAnimationFrame(updateProgress);
+      if (isPlaying && soundRef.current.playing()) {
+        requestAnimationFrame(updateProgress);
+      }
+    } catch (error) {
+      console.error('Progress update error:', error);
     }
   };
 
   // Handle play/pause changes
   useEffect(() => {
-    if (!soundRef.current && isPlaying) {
-      simulatePlayback();
-      return;
-    }
-
-    if (soundRef.current) {
+    if (soundRef.current && soundRef.current.state() === 'loaded') {
       if (isPlaying) {
         soundRef.current.play();
       } else {
         soundRef.current.pause();
       }
-    } else if (isPlaying) {
-      simulatePlayback();
-    } else {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
+    } else if (isPlaying && !soundRef.current) {
+      // If no sound loaded yet but play is requested, show loading
+      setIsLoading(true);
     }
   }, [isPlaying]);
 
@@ -162,20 +143,23 @@ export function useAudio() {
       if (soundRef.current) {
         soundRef.current.unload();
       }
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
     };
   }, []);
 
   return {
     isLoading,
-    error,
     seek: (time: number) => {
-      if (soundRef.current) {
-        soundRef.current.seek(time);
+      if (soundRef.current && soundRef.current.state() === 'loaded') {
+        try {
+          soundRef.current.seek(time);
+          setCurrentTime(time);
+          console.log(`Seeked to: ${time}s`);
+        } catch (error) {
+          console.error('Seek error:', error);
+        }
+      } else {
+        console.warn('Audio not loaded, cannot seek');
       }
-      setCurrentTime(time);
     },
   };
 }

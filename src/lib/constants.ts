@@ -36,31 +36,23 @@ export const BREAKPOINTS = {
   desktop: 1200,
 } as const;
 
-// Lo-fi playlist (placeholder tracks)
+// Lo-fi playlist (actual tracks)
 export const PLAYLIST = [
   {
-    id: 'track1',
-    title: 'Midnight Coffee',
-    artist: 'Lo-fi Collective',
-    duration: 223, // seconds
-    src: '/audio/midnight-coffee.mp3',
-    cover: '/images/covers/cover1.jpg'
+    id: 'lofi1',
+    title: 'Lofi Study Session',
+    artist: 'Chill Collective',
+    duration: 180, // Will be auto-detected
+    src: '/lofi1.mp3',
+    cover: '/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg'
   },
   {
-    id: 'track2',
-    title: 'Study Vibes',
-    artist: 'Chill Beats',
-    duration: 187,
-    src: '/audio/study-vibes.mp3',
-    cover: '/images/covers/cover2.jpg'
-  },
-  {
-    id: 'track3',
-    title: 'Focus Flow',
-    artist: 'Ambient Dreams',
-    duration: 205,
-    src: '/audio/focus-flow.mp3',
-    cover: '/images/covers/cover3.jpg'
+    id: 'lofi2',
+    title: 'Focus Beats',
+    artist: 'Lo-fi Dreams',
+    duration: 200, // Will be auto-detected
+    src: '/lofi2.mp3',
+    cover: '/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg'
   }
 ] as const;
 

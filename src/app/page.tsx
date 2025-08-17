@@ -5,11 +5,12 @@ import { Header } from '@/components/Layout/Header';
 import { TimerCard } from '@/components/Timer/TimerCard';
 import { PlayerCard } from '@/components/Player/PlayerCard';
 import { useTimer } from '@/hooks/useTimer';
-// import { useAudio } from '@/hooks/useAudio';
+import { useAudio } from '@/hooks/useAudio';
 
 export default function Home() {
   // Initialize hooks
   useTimer();
+  useAudio();
 
   return (
     <main className="min-h-screen relative">

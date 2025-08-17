@@ -226,6 +226,21 @@
     font-family: var(--font-ui);
   }
   
+  /* Volume Slider Styles */
+  .volume-slider {
+    background: transparent !important;
+  }
+  
+  .volume-slider [role="slider"] {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  
+  .volume-slider .bg-primary,
+  .volume-slider .bg-secondary {
+    background: transparent !important;
+  }
+
   @media (max-width: 768px) {
     .timer-display {
       font-size: 48px;

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePlayerStore } from '@/stores/playerStore';
+import { useAudio } from '@/hooks/useAudio';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
@@ -14,16 +15,16 @@ export function PlayerCard() {
   const {
     currentTrack,
     isPlaying,
-    progress,
     currentTime,
     duration,
     playlist,
-    play,
-    pause,
     toggle,
     next,
     previous,
+    setVolume: setStoreVolume,
   } = usePlayerStore();
+
+  const { isLoading } = useAudio();
 
   const currentSong = playlist[currentTrack];
 
@@ -34,13 +35,12 @@ export function PlayerCard() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const handleSeek = (value: number[]) => {
-    // This would be implemented with actual audio player
-    console.log('Seek to:', value[0]);
-  };
+
 
   const handleVolumeChange = (value: number[]) => {
-    setVolume(value[0]);
+    const newVolume = value[0];
+    setVolume(newVolume);
+    setStoreVolume(newVolume / 100); // Store expects 0-1 range
   };
 
   return (
@@ -55,8 +55,8 @@ export function PlayerCard() {
       {/* Cover Photo - Sol kenarda 24px uzaklıkta */}
       <div className="flex-shrink-0">
         <Image
-          src="/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg"
-          alt="Album Cover"
+          src={currentSong?.cover || "/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg"}
+          alt={`${currentSong?.title || 'Track'} Cover`}
           width={110}
           height={110}
           className="rounded-3xl object-cover"
@@ -68,10 +68,10 @@ export function PlayerCard() {
         {/* Song Info - Cover'ın üstüne hizalı */}
         <div>
           <h3 className="text-base font-medium text-[#15142F] leading-tight">
-            Midnight Lofi Dreams
+            {currentSong?.title || 'No Track'}
           </h3>
           <p className="text-sm text-[#15142F]/70">
-            Chill Collective
+            {currentSong?.artist || 'Unknown Artist'}
           </p>
         </div>
 
@@ -90,9 +90,12 @@ export function PlayerCard() {
           <Button
             onClick={toggle}
             size="sm"
-            className="w-10 h-10 rounded-full bg-[#0E3C1D] hover:bg-[#0E3C1D]/80 text-white shadow-lg flex items-center justify-center"
+            disabled={isLoading}
+            className="w-10 h-10 rounded-full bg-[#8A4FFF] hover:bg-[#8A4FFF]/80 text-[#15142F] shadow-lg flex items-center justify-center disabled:opacity-50"
           >
-            {isPlaying ? (
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-[#15142F] border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
               <Pause className="w-5 h-5" />
             ) : (
               <Play className="w-5 h-5 ml-0.5" />
@@ -114,50 +117,45 @@ export function PlayerCard() {
       <div className="flex flex-col justify-between items-end ml-4 min-w-0">
         {/* Time Display */}
         <div className="text-sm text-[#15142F]/70 font-medium">
-          {formatTime(currentTime || 65)}/{formatTime(duration || currentSong?.duration || 243)}
+          {formatTime(currentTime || 0)}/{formatTime(duration || currentSong?.duration || 0)}
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-20 mb-2">
-          <Slider
-            value={[progress]}
-            onValueChange={handleSeek}
-            max={100}
-            step={1}
-            className="w-full"
-          />
-        </div>
 
-        {/* Volume Control */}
-        <div className="relative">
-          <Button
-            size="sm"
-            className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-[#15142F] border-none shadow-sm flex items-center justify-center"
-            onMouseEnter={() => setShowVolumeSlider(true)}
-            onMouseLeave={() => setShowVolumeSlider(false)}
-          >
-            <Volume2 className="w-4 h-4" />
-          </Button>
 
-          {/* Volume Slider - Hover'da görünür */}
+        {/* Volume Control with Horizontal Slider */}
+        <div 
+          className="relative flex items-center w-28 h-10 justify-end"
+          onMouseEnter={() => setShowVolumeSlider(true)}
+          onMouseLeave={() => setShowVolumeSlider(false)}
+        >
+          {/* Horizontal Volume Bar - Shows on hover, extends to next button */}
           {showVolumeSlider && (
-            <div 
-              className="absolute bottom-full right-0 mb-2 bg-black/80 backdrop-blur-sm rounded-lg p-2"
-              onMouseEnter={() => setShowVolumeSlider(true)}
-              onMouseLeave={() => setShowVolumeSlider(false)}
-            >
-              <div className="w-16 h-20 flex items-center justify-center">
+            <div className="absolute left-0 right-10 h-full flex items-center">
+              {/* Actual bar with bigger hit area */}
+              <div className="w-full h-2 bg-white/30 rounded-full relative">
+                {/* Volume Fill */}
+                <div 
+                  className="h-full bg-[#8A4FFF] rounded-full transition-all duration-200"
+                  style={{ width: `${volume}%` }}
+                />
+                {/* Invisible slider for interaction */}
                 <Slider
                   value={[volume]}
                   onValueChange={handleVolumeChange}
                   max={100}
                   step={1}
-                  orientation="vertical"
-                  className="h-16"
+                  className="absolute inset-0 w-full volume-slider cursor-pointer"
                 />
               </div>
             </div>
           )}
+          
+          <Button
+            size="sm"
+            className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-[#15142F] border-none shadow-sm flex items-center justify-center transition-colors relative z-10"
+          >
+            <Volume2 className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     </div>

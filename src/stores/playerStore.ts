@@ -52,23 +52,25 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
   // Next track
   next: () => {
-    const { currentTrack, playlist } = get();
+    const { currentTrack, playlist, isPlaying } = get();
     const nextTrack = (currentTrack + 1) % playlist.length;
     set({ 
       currentTrack: nextTrack,
       progress: 0,
-      currentTime: 0
+      currentTime: 0,
+      isPlaying // Preserve playing state
     });
   },
 
   // Previous track
   previous: () => {
-    const { currentTrack, playlist } = get();
+    const { currentTrack, playlist, isPlaying } = get();
     const prevTrack = currentTrack === 0 ? playlist.length - 1 : currentTrack - 1;
     set({ 
       currentTrack: prevTrack,
       progress: 0,
-      currentTime: 0
+      currentTime: 0,
+      isPlaying // Preserve playing state
     });
   },
 
