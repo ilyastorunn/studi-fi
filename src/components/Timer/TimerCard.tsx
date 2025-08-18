@@ -3,17 +3,17 @@
 import { useTimerStore } from "@/stores/timerStore";
 import { TIMER_STATES, TIMER_PRESETS } from "@/lib/constants";
 import { TimerDisplay } from "./TimerDisplay";
-import { TimerPresets } from "./TimerPresets";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, CheckCircle } from "lucide-react";
+import { Play, Pause, RotateCcw } from "lucide-react";
 
 export function TimerCard() {
   const {
     timeLeft,
     duration,
     state,
-    sessionCount,
+    isCustomTimeInputMode,
     setDuration,
+    toggleCustomTimeInput,
     start,
     pause,
     resume,
@@ -22,18 +22,6 @@ export function TimerCard() {
 
   const isRunning = state === TIMER_STATES.RUNNING;
   const isPaused = state === TIMER_STATES.PAUSED;
-  const isCompleted = state === TIMER_STATES.COMPLETED;
-  const isIdle = state === TIMER_STATES.IDLE;
-
-  const handlePlayPause = () => {
-    if (isRunning) {
-      pause();
-    } else if (isPaused) {
-      resume();
-    } else if (isIdle || isCompleted) {
-      start();
-    }
-  };
 
   const handleReset = () => {
     reset();
@@ -64,10 +52,10 @@ export function TimerCard() {
         </div>
 
         {/* Control Buttons */}
-        <div className="flex items-center justify-center space-x-3">
+        <div className="flex items-center justify-center space-x-4">
           {/* Start Button */}
           <Button
-            onClick={isRunning ? pause : start}
+            onClick={isRunning ? pause : (isPaused ? resume : start)}
             size="lg"
             className="w-12 h-12 rounded-full bg-[#0E3C1D] hover:bg-[#0E3C1D]/80 text-white shadow-lg flex items-center justify-center"
           >
@@ -85,19 +73,6 @@ export function TimerCard() {
             className="w-12 h-12 rounded-full bg-[#491615] hover:bg-[#491615]/80 text-white shadow-lg flex items-center justify-center"
           >
             <RotateCcw className="w-5 h-5" />
-          </Button>
-
-          {/* Check Button */}
-          <Button
-            size="lg"
-            className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center ${
-              isCompleted
-                ? "bg-[var(--accent-green)] text-white"
-                : "bg-white/20 text-[var(--text-primary)] border-white/30"
-            }`}
-            disabled={!isCompleted}
-          >
-            <CheckCircle className="w-5 h-5" />
           </Button>
         </div>
       </div>
@@ -132,9 +107,12 @@ export function TimerCard() {
         <Button
           variant="outline"
           disabled={isRunning}
-          className="w-full h-12 rounded-xl text-sm border-none font-medium backdrop-blur-md bg-[#15142F]/25 text-[#15142F] border-white/30 hover:bg-[#15142F]/50 transition-all duration-200"
+          onClick={toggleCustomTimeInput}
+          className={`w-full h-12 rounded-xl text-sm border-none font-medium backdrop-blur-md bg-[#15142F]/25 text-[#15142F] border-white/30 hover:bg-[#15142F]/50 transition-all duration-200 ${
+            isCustomTimeInputMode ? "ring-1 ring-[#8A4FFF]" : ""
+          }`}
         >
-          set custom time
+          {isCustomTimeInputMode ? "cancel" : "set custom time"}
         </Button>
       </div>
     </div>

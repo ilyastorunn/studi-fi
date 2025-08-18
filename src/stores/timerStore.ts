@@ -7,9 +7,12 @@ interface TimerStore {
   duration: number;
   state: TimerState;
   sessionCount: number;
+  isCustomTimeInputMode: boolean;
   
   // Actions
   setDuration: (minutes: number) => void;
+  setCustomTime: (hours: number, minutes: number, seconds: number) => void;
+  toggleCustomTimeInput: () => void;
   start: () => void;
   pause: () => void;
   resume: () => void;
@@ -24,15 +27,15 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   duration: DEFAULT_TIMER_DURATION,
   state: TIMER_STATES.IDLE,
   sessionCount: 0,
+  isCustomTimeInputMode: false,
 
   // Set timer duration (convert minutes to seconds)
   setDuration: (minutes: number) => {
     if (minutes === -1) {
-      // Infinity mode - set to a very large number (24 hours)
-      const duration = 24 * 60 * 60; // 24 hours in seconds
+      // Infinity mode - start from 0 and count up
       set({ 
         duration: -1, // Keep -1 to identify infinity mode
-        timeLeft: duration,
+        timeLeft: 0, // Start from 0 for infinity mode
         state: TIMER_STATES.IDLE 
       });
     } else {
@@ -42,6 +45,26 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
         timeLeft: duration,
         state: TIMER_STATES.IDLE 
       });
+    }
+  },
+
+  // Set custom time (convert hours, minutes, seconds to total seconds)
+  setCustomTime: (hours: number, minutes: number, seconds: number) => {
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    set({ 
+      duration: totalSeconds,
+      timeLeft: totalSeconds,
+      state: TIMER_STATES.IDLE,
+      isCustomTimeInputMode: false
+    });
+  },
+
+  // Toggle custom time input mode
+  toggleCustomTimeInput: () => {
+    const { state } = get();
+    // Only allow toggle if timer is not running
+    if (state !== TIMER_STATES.RUNNING) {
+      set({ isCustomTimeInputMode: !get().isCustomTimeInputMode });
     }
   },
 
@@ -63,22 +86,37 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   // Reset timer
   reset: () => {
     const { duration } = get();
-    set({ 
-      timeLeft: duration,
-      state: TIMER_STATES.IDLE 
-    });
+    if (duration === -1) {
+      // Infinity mode - reset to 0
+      set({ 
+        timeLeft: 0,
+        state: TIMER_STATES.IDLE 
+      });
+    } else {
+      // Normal mode - reset to original duration
+      set({ 
+        timeLeft: duration,
+        state: TIMER_STATES.IDLE 
+      });
+    }
   },
 
-  // Tick (decrement time)
+  // Tick (decrement time for normal timers, increment for infinity mode)
   tick: () => {
-    const { timeLeft, state } = get();
+    const { timeLeft, state, duration } = get();
     
     if (state !== TIMER_STATES.RUNNING) return;
     
-    if (timeLeft <= 1) {
-      get().complete();
+    if (duration === -1) {
+      // Infinity mode - count up
+      set({ timeLeft: timeLeft + 1 });
     } else {
-      set({ timeLeft: timeLeft - 1 });
+      // Normal mode - count down
+      if (timeLeft <= 1) {
+        get().complete();
+      } else {
+        set({ timeLeft: timeLeft - 1 });
+      }
     }
   },
 
