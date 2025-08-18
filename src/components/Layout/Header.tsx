@@ -2,9 +2,10 @@
 
 import { useAuthStore, restoreUserFromSession } from '@/stores/authStore';
 import { useEffect } from 'react';
+import { AuthModals } from '@/components/Auth/AuthModals';
 
 export function Header() {
-  const { user, isAuthenticated, login, logout, setUser } = useAuthStore();
+  const { user, isAuthenticated, logout, setUser, openLoginModal } = useAuthStore();
 
   // Restore user from session storage on mount
   useEffect(() => {
@@ -14,15 +15,8 @@ export function Header() {
     }
   }, [setUser]);
 
-  // Mock login function for demo purposes
-  const handleLogin = () => {
-    const mockUser = {
-      id: '1',
-      name: 'Jane Doe',
-      email: 'jane@example.com',
-      initials: 'JD'
-    };
-    login(mockUser);
+  const handleLoginClick = () => {
+    openLoginModal();
   };
 
   const handleLogout = () => {
@@ -59,7 +53,7 @@ export function Header() {
         </span>
       </div>
 
-      {/* Login Button Card - 142x57px, 50px top, 70px right */}
+      {/* Auth Button Card - 142x57px, 50px top, 70px right */}
       <div 
         className="absolute cursor-pointer"
         style={{
@@ -72,21 +66,58 @@ export function Header() {
           borderRadius: '50px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          gap: '8px'
         }}
-        onClick={isAuthenticated ? handleLogout : handleLogin}
+        onClick={isAuthenticated ? handleLogout : handleLoginClick}
       >
-        <span 
-          style={{
-            fontFamily: 'var(--font-comfortaa)',
-            fontSize: '18px',
-            color: '#15142F',
-            fontWeight: '600'
-          }}
-        >
-          {isAuthenticated ? 'logout' : 'login'}
-        </span>
+        {isAuthenticated && user ? (
+          <>
+            {/* User Avatar */}
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: '#4A90E2',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '12px',
+                fontWeight: '600',
+                fontFamily: 'var(--font-comfortaa)',
+              }}
+            >
+              {user.initials}
+            </div>
+            <span 
+              style={{
+                fontFamily: 'var(--font-comfortaa)',
+                fontSize: '16px',
+                color: '#15142F',
+                fontWeight: '600'
+              }}
+            >
+              logout
+            </span>
+          </>
+        ) : (
+          <span 
+            style={{
+              fontFamily: 'var(--font-comfortaa)',
+              fontSize: '18px',
+              color: '#15142F',
+              fontWeight: '600'
+            }}
+          >
+            login
+          </span>
+        )}
       </div>
+
+      {/* Auth Modals */}
+      <AuthModals />
     </header>
   );
 }

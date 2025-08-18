@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useTimerStore } from '@/stores/timerStore';
-import { TIMER_STATES, TIMER_PRESETS } from '@/lib/constants';
-import { TimerDisplay } from './TimerDisplay';
-import { TimerPresets } from './TimerPresets';
-import { Button } from '@/components/ui/button';
-import { Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
+import { useTimerStore } from "@/stores/timerStore";
+import { TIMER_STATES, TIMER_PRESETS } from "@/lib/constants";
+import { TimerDisplay } from "./TimerDisplay";
+import { TimerPresets } from "./TimerPresets";
+import { Button } from "@/components/ui/button";
+import { Play, Pause, RotateCcw, CheckCircle } from "lucide-react";
 
 export function TimerCard() {
   const {
@@ -48,12 +48,12 @@ export function TimerCard() {
   const selectedMinutes = duration === -1 ? -1 : duration / 60;
 
   return (
-    <div 
+    <div
       className="w-[672px] h-[240px] p-6 flex"
       style={{
-        backgroundColor: 'rgba(234, 234, 242, 0.3)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '50px',
+        backgroundColor: "rgba(234, 234, 242, 0.3)",
+        backdropFilter: "blur(10px)",
+        borderRadius: "50px",
       }}
     >
       {/* Sol Taraf - Timer Display ve Control Buttons */}
@@ -91,9 +91,9 @@ export function TimerCard() {
           <Button
             size="lg"
             className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center ${
-              isCompleted 
-                ? 'bg-[var(--accent-green)] text-white' 
-                : 'bg-white/20 text-[var(--text-primary)] border-white/30'
+              isCompleted
+                ? "bg-[var(--accent-green)] text-white"
+                : "bg-white/20 text-[var(--text-primary)] border-white/30"
             }`}
             disabled={!isCompleted}
           >
@@ -114,9 +114,13 @@ export function TimerCard() {
               disabled={isRunning}
               className={`
                 h-12 rounded-xl text-sm font-medium transition-all duration-200
-                backdrop-blur-md bg-white/10 text-[#15142F] border-none hover:bg-white/20
-                ${selectedMinutes === preset.value ? 'ring-2 ring-[var(--accent-purple)]' : ''}
-                ${isRunning ? 'opacity-50 cursor-not-allowed' : ''}
+                backdrop-blur-md bg-[#15142F]/25 text-[#15142F] border-none hover:bg-[#15142F]/50
+                ${
+                  selectedMinutes === preset.value
+                    ? "ring-1 ring-[#8A4FFF]"
+                    : ""
+                }
+                ${isRunning ? "opacity-50 cursor-not-allowed" : ""}
               `}
             >
               {preset.label}
@@ -128,7 +132,7 @@ export function TimerCard() {
         <Button
           variant="outline"
           disabled={isRunning}
-          className="w-full h-12 rounded-xl text-sm border-none font-medium backdrop-blur-md bg-white/10 text-[#15142F] border-white/30 hover:bg-white/20 transition-all duration-200"
+          className="w-full h-12 rounded-xl text-sm border-none font-medium backdrop-blur-md bg-[#15142F]/25 text-[#15142F] border-white/30 hover:bg-[#15142F]/50 transition-all duration-200"
         >
           set custom time
         </Button>
