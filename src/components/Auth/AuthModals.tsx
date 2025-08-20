@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import { authHelpers, convertSupabaseUser } from "@/lib/auth";
 import {
   Dialog,
   DialogContent,
@@ -81,7 +82,7 @@ export function AuthModals() {
   const [signUpErrors, setSignUpErrors] = useState<Partial<SignUpFormData>>({});
 
   // Handle login form submit
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Simple validation
@@ -92,25 +93,31 @@ export function AuthModals() {
     setLoginErrors(errors);
 
     if (Object.keys(errors).length === 0) {
-      // Mock successful login
-      const user = {
-        id: "1",
-        name: loginForm.email.split("@")[0],
-        email: loginForm.email,
-        initials: loginForm.email.substring(0, 2).toUpperCase(),
-      };
+      try {
+        // Real Supabase login
+        const { user } = await authHelpers.signIn(loginForm.email, loginForm.password);
+        
+        if (user) {
+          const authUser = convertSupabaseUser(user);
+          login(authUser);
+          closeLoginModal();
 
-      login(user);
-      closeLoginModal();
-
-      // Reset form
-      setLoginForm({ email: "", password: "" });
-      setLoginErrors({});
+          // Reset form
+          setLoginForm({ email: "", password: "" });
+          setLoginErrors({});
+        }
+      } catch (error) {
+        // Handle auth errors
+        const errorMessage = error instanceof Error ? error.message : "Login failed. Please check your credentials.";
+        setLoginErrors({ 
+          email: errorMessage
+        });
+      }
     }
   };
 
   // Handle sign up form submit
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Simple validation
@@ -125,25 +132,30 @@ export function AuthModals() {
     setSignUpErrors(errors);
 
     if (Object.keys(errors).length === 0) {
-      // Mock successful sign up
-      const user = {
-        id: "1",
-        name: signUpForm.name,
-        email: signUpForm.email,
-        initials: signUpForm.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase()
-          .substring(0, 2),
-      };
+      try {
+        // Real Supabase sign up
+        const { user } = await authHelpers.signUp(
+          signUpForm.email, 
+          signUpForm.password, 
+          signUpForm.name
+        );
+        
+        if (user) {
+          const authUser = convertSupabaseUser(user);
+          login(authUser);
+          closeSignUpModal();
 
-      login(user);
-      closeSignUpModal();
-
-      // Reset form
-      setSignUpForm({ name: "", email: "", password: "", confirmPassword: "" });
-      setSignUpErrors({});
+          // Reset form
+          setSignUpForm({ name: "", email: "", password: "", confirmPassword: "" });
+          setSignUpErrors({});
+        }
+      } catch (error) {
+        // Handle auth errors
+        const errorMessage = error instanceof Error ? error.message : "Sign up failed. Please try again.";
+        setSignUpErrors({ 
+          email: errorMessage
+        });
+      }
     }
   };
 
@@ -307,6 +319,7 @@ export function AuthModals() {
                   {/* Login Button */}
                   <button
                     type="submit"
+                    className="transition-all duration-200 hover:scale-105 hover:bg-white/40"
                     style={{
                       width: "50%",
                       height: "48px",
@@ -327,6 +340,7 @@ export function AuthModals() {
                   {/* Login with Google Button */}
                   <button
                     type="button"
+                    className="transition-all duration-200 hover:scale-105 hover:bg-white/40"
                     style={{
                       width: "65%",
                       height: "48px",
@@ -344,23 +358,37 @@ export function AuthModals() {
                       justifyContent: "center",
                       gap: "8px",
                     }}
-                    onClick={() => {
-                      // Mock Google login
-                      const user = {
-                        id: "1",
-                        name: "Google User",
-                        email: "user@gmail.com",
-                        initials: "GU",
-                      };
-                      login(user);
-                      closeLoginModal();
+                    onClick={async () => {
+                      try {
+                        // Real Google OAuth login
+                        await authHelpers.signInWithGoogle();
+                        // User will be set via auth state change
+                        closeLoginModal();
+                      } catch (error) {
+                        const errorMessage = error instanceof Error ? error.message : "Google login failed. Please try again.";
+                        setLoginErrors({ 
+                          email: errorMessage
+                        });
+                      }
                     }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"
+                      />
                     </svg>
                     Login with Google
                   </button>
@@ -449,6 +477,7 @@ export function AuthModals() {
                   Create Account
                 </DialogTitle>
                 <p
+                  className="flex items-center justify-center"
                   style={{
                     fontFamily: "var(--font-comfortaa)",
                     fontSize: "16px",
@@ -610,6 +639,7 @@ export function AuthModals() {
                   {/* Sign Up Button */}
                   <button
                     type="submit"
+                    className="transition-all duration-200 hover:scale-105 hover:bg-white/40"
                     style={{
                       width: "50%",
                       height: "48px",
@@ -630,6 +660,7 @@ export function AuthModals() {
                   {/* Sign Up with Google Button */}
                   <button
                     type="button"
+                    className="transition-all duration-200 hover:scale-105 hover:bg-white/40"
                     style={{
                       width: "65%",
                       height: "48px",
@@ -647,23 +678,37 @@ export function AuthModals() {
                       justifyContent: "center",
                       gap: "8px",
                     }}
-                    onClick={() => {
-                      // Mock Google sign up
-                      const user = {
-                        id: "1",
-                        name: "Google User",
-                        email: "user@gmail.com",
-                        initials: "GU",
-                      };
-                      login(user);
-                      closeSignUpModal();
+                    onClick={async () => {
+                      try {
+                        // Real Google OAuth sign up
+                        await authHelpers.signInWithGoogle();
+                        // User will be set via auth state change
+                        closeSignUpModal();
+                      } catch (error) {
+                        const errorMessage = error instanceof Error ? error.message : "Google sign up failed. Please try again.";
+                        setSignUpErrors({ 
+                          email: errorMessage
+                        });
+                      }
                     }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"
+                      />
                     </svg>
                     Sign Up with Google
                   </button>
@@ -752,6 +797,7 @@ export function AuthModals() {
                   Your Study Statistics
                 </DialogTitle>
                 <p
+                  className="flex items-center justify-center"
                   style={{
                     fontFamily: "var(--font-comfortaa)",
                     fontSize: "16px",
@@ -765,7 +811,10 @@ export function AuthModals() {
 
               {/* Chart Container */}
               <div className="w-full max-w-lg">
-                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <ChartContainer
+                  config={chartConfig}
+                  className="h-[300px] w-full"
+                >
                   <AreaChart
                     data={studyData}
                     margin={{
@@ -776,7 +825,13 @@ export function AuthModals() {
                     }}
                   >
                     <defs>
-                      <linearGradient id="fillHours" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient
+                        id="fillHours"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
                         <stop
                           offset="5%"
                           stopColor="var(--color-hours)"
@@ -794,10 +849,10 @@ export function AuthModals() {
                       tickLine={false}
                       axisLine={false}
                       tickMargin={8}
-                      style={{ 
-                        fontSize: "12px", 
+                      style={{
+                        fontSize: "12px",
                         fontFamily: "var(--font-comfortaa)",
-                        fill: "#15142F"
+                        fill: "#15142F",
                       }}
                     />
                     <YAxis
@@ -805,10 +860,10 @@ export function AuthModals() {
                       axisLine={false}
                       tickMargin={8}
                       tickFormatter={(value) => `${value}h`}
-                      style={{ 
-                        fontSize: "12px", 
+                      style={{
+                        fontSize: "12px",
                         fontFamily: "var(--font-comfortaa)",
-                        fill: "#15142F"
+                        fill: "#15142F",
                       }}
                     />
                     <ChartTooltip
@@ -825,7 +880,7 @@ export function AuthModals() {
                     />
                   </AreaChart>
                 </ChartContainer>
-                
+
                 {/* Chart Summary */}
                 <div className="mt-6 text-center">
                   <p
@@ -836,7 +891,8 @@ export function AuthModals() {
                       fontWeight: "500",
                     }}
                   >
-                    Total this week: <span style={{ fontWeight: "600" }}>30.5 hours</span>
+                    Total this week:{" "}
+                    <span style={{ fontWeight: "600" }}>30.5 hours</span>
                   </p>
                   <p
                     style={{
@@ -859,7 +915,7 @@ export function AuthModals() {
       {/* Floating Chart Button */}
       <button
         onClick={openChartModal}
-        className="fixed z-50 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-200 hover:scale-105"
+        className="fixed z-50 rounded-full border-none bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-200 hover:scale-105"
         style={{
           bottom: "20px",
           right: "70px",

@@ -51,15 +51,31 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   // Logout user
-  logout: () => {
-    set({ 
-      user: null, 
-      isAuthenticated: false 
-    });
-    
-    // Clear session storage
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('studi-fi-user');
+  logout: async () => {
+    try {
+      // Import auth helpers dynamically to avoid circular deps
+      const { authHelpers } = await import('@/lib/auth');
+      await authHelpers.signOut();
+      
+      set({ 
+        user: null, 
+        isAuthenticated: false 
+      });
+      
+      // Clear session storage
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('studi-fi-user');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, clear local state
+      set({ 
+        user: null, 
+        isAuthenticated: false 
+      });
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('studi-fi-user');
+      }
     }
   },
 

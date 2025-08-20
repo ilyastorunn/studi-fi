@@ -1,5 +1,19 @@
 import { create } from 'zustand';
 import { PLAYLIST, VOLUME_DEFAULT, type Track } from '@/lib/constants';
+import { useMusicStore } from './musicStore';
+import type { Song } from '@/lib/supabase';
+
+// Convert Supabase Song to Track format
+function convertSongToTrack(song: Song): Track {
+  return {
+    id: song.id,
+    title: song.name,
+    artist: song.artist,
+    duration: song.duration,
+    src: song.file_url,
+    cover: song.cover_url || '/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg'
+  };
+}
 
 interface PlayerStore {
   // State
@@ -10,6 +24,7 @@ interface PlayerStore {
   duration: number; // seconds
   currentTime: number; // seconds
   playlist: Track[];
+  useSupabaseSongs: boolean;
   
   // Actions
   play: () => void;
@@ -22,6 +37,8 @@ interface PlayerStore {
   setCurrentTime: (time: number) => void;
   setDuration: (duration: number) => void;
   setTrack: (index: number) => void;
+  updatePlaylistFromSupabase: () => void;
+  toggleSupabaseSongs: () => void;
 }
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
@@ -33,6 +50,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   duration: 0,
   currentTime: 0,
   playlist: PLAYLIST,
+  useSupabaseSongs: false,
 
   // Play current track
   play: () => {
@@ -110,6 +128,39 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
         progress: 0,
         currentTime: 0
       });
+    }
+  },
+
+  // Update playlist from Supabase songs
+  updatePlaylistFromSupabase: () => {
+    const musicStore = useMusicStore.getState();
+    if (musicStore.songs.length > 0) {
+      const supabasePlaylist = musicStore.songs.map(convertSongToTrack);
+      set({ 
+        playlist: supabasePlaylist,
+        currentTrack: 0,
+        progress: 0,
+        currentTime: 0,
+        useSupabaseSongs: true
+      });
+    }
+  },
+
+  // Toggle between default and Supabase songs
+  toggleSupabaseSongs: () => {
+    const { useSupabaseSongs } = get();
+    if (useSupabaseSongs) {
+      // Switch back to default playlist
+      set({ 
+        playlist: PLAYLIST,
+        currentTrack: 0,
+        progress: 0,
+        currentTime: 0,
+        useSupabaseSongs: false
+      });
+    } else {
+      // Switch to Supabase songs
+      get().updatePlaylistFromSupabase();
     }
   },
 }));

@@ -67,10 +67,16 @@ export function PlayerCard() {
       <div className="flex-1 flex flex-col justify-between ml-4">
         {/* Song Info - Cover'ın üstüne hizalı */}
         <div>
-          <h3 className="text-base font-medium text-[#15142F] leading-tight">
+          <h3 
+            className="text-base font-medium text-[#15142F] leading-tight"
+            style={{ fontFamily: 'var(--font-comfortaa)' }}
+          >
             {currentSong?.title || 'No Track'}
           </h3>
-          <p className="text-sm text-[#15142F]/70">
+          <p 
+            className="text-sm text-[#15142F]/70"
+            style={{ fontFamily: 'var(--font-comfortaa)' }}
+          >
             {currentSong?.artist || 'Unknown Artist'}
           </p>
         </div>
@@ -116,7 +122,10 @@ export function PlayerCard() {
       {/* Sağ Kısım - Time & Progress & Volume */}
       <div className="flex flex-col justify-between items-end ml-4 min-w-0">
         {/* Time Display */}
-        <div className="text-sm text-[#15142F]/70 font-medium">
+        <div 
+          className="text-sm text-[#15142F]/70 font-medium"
+          style={{ fontFamily: 'var(--font-comfortaa)' }}
+        >
           {formatTime(currentTime || 0)}/{formatTime(duration || currentSong?.duration || 0)}
         </div>
 
@@ -135,7 +144,7 @@ export function PlayerCard() {
               <div className="w-full h-2 bg-white/30 rounded-full relative">
                 {/* Volume Fill */}
                 <div 
-                  className="h-full bg-[#8A4FFF] rounded-full transition-all duration-200"
+                  className="h-full bg-[#9A61EA] rounded-full transition-all duration-200"
                   style={{ width: `${volume}%` }}
                 />
                 {/* Invisible slider for interaction */}

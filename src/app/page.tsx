@@ -1,16 +1,36 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Background } from '@/components/Layout/Background';
 import { Header } from '@/components/Layout/Header';
 import { TimerCard } from '@/components/Timer/TimerCard';
 import { PlayerCard } from '@/components/Player/PlayerCard';
 import { useTimer } from '@/hooks/useTimer';
 import { useAudio } from '@/hooks/useAudio';
+import { useMusicStore } from '@/stores/musicStore';
+import { usePlayerStore } from '@/stores/playerStore';
 
 export default function Home() {
   // Initialize hooks
   useTimer();
   useAudio();
+  
+  // Initialize music store
+  const { fetchSongs } = useMusicStore();
+  const { updatePlaylistFromSupabase } = usePlayerStore();
+  
+  useEffect(() => {
+    // Fetch songs from Supabase on app load
+    fetchSongs().then(() => {
+      // Update player playlist if songs are available
+      const musicStore = useMusicStore.getState();
+      if (musicStore.songs.length > 0) {
+        updatePlaylistFromSupabase();
+      }
+    }).catch(() => {
+      // Silently fail - will use default playlist
+    });
+  }, [fetchSongs, updatePlaylistFromSupabase]);
 
   return (
     <main className="min-h-screen relative">
