@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { TIMER_STATES, DEFAULT_TIMER_DURATION, type TimerState } from '@/lib/constants';
+import { useStatsStore } from './statsStore';
 
 interface TimerStore {
   // State
@@ -8,6 +9,8 @@ interface TimerStore {
   state: TimerState;
   sessionCount: number;
   isCustomTimeInputMode: boolean;
+  sessionStartTime: number | null; // Timestamp when session started
+  totalStudiedToday: number; // Total studied in seconds today
   
   // Actions
   setDuration: (minutes: number) => void;
@@ -19,6 +22,7 @@ interface TimerStore {
   reset: () => void;
   tick: () => void;
   complete: () => void;
+  recordCurrentSession: () => Promise<void>;
 }
 
 export const useTimerStore = create<TimerStore>((set, get) => ({
@@ -28,6 +32,8 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   state: TIMER_STATES.IDLE,
   sessionCount: 0,
   isCustomTimeInputMode: false,
+  sessionStartTime: null,
+  totalStudiedToday: 0,
 
   // Set timer duration (convert minutes to seconds)
   setDuration: (minutes: number) => {
@@ -70,33 +76,56 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
 
   // Start timer
   start: () => {
-    set({ state: TIMER_STATES.RUNNING });
+    set({ 
+      state: TIMER_STATES.RUNNING,
+      sessionStartTime: Date.now()
+    });
   },
 
   // Pause timer
   pause: () => {
-    set({ state: TIMER_STATES.PAUSED });
+    const state = get();
+    if (state.sessionStartTime) {
+      // Record the time studied so far in this session
+      get().recordCurrentSession();
+    }
+    set({ 
+      state: TIMER_STATES.PAUSED,
+      sessionStartTime: null
+    });
   },
 
   // Resume timer
   resume: () => {
-    set({ state: TIMER_STATES.RUNNING });
+    set({ 
+      state: TIMER_STATES.RUNNING,
+      sessionStartTime: Date.now()
+    });
   },
 
   // Reset timer
   reset: () => {
+    const state = get();
+    
+    // Record current session if timer was running
+    if (state.state === TIMER_STATES.RUNNING && state.sessionStartTime) {
+      get().recordCurrentSession();
+    }
+    
     const { duration } = get();
     if (duration === -1) {
       // Infinity mode - reset to 0
       set({ 
         timeLeft: 0,
-        state: TIMER_STATES.IDLE 
+        state: TIMER_STATES.IDLE,
+        sessionStartTime: null
       });
     } else {
       // Normal mode - reset to original duration
       set({ 
         timeLeft: duration,
-        state: TIMER_STATES.IDLE 
+        state: TIMER_STATES.IDLE,
+        sessionStartTime: null
       });
     }
   },
@@ -122,11 +151,44 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
 
   // Complete timer
   complete: () => {
+    const state = get();
+    
+    // Record the session when completing
+    if (state.sessionStartTime) {
+      get().recordCurrentSession();
+    }
+    
     const { sessionCount } = get();
     set({ 
       state: TIMER_STATES.COMPLETED,
       timeLeft: 0,
-      sessionCount: sessionCount + 1
+      sessionCount: sessionCount + 1,
+      sessionStartTime: null
     });
+  },
+
+  // Record current study session
+  recordCurrentSession: async () => {
+    const state = get();
+    
+    if (!state.sessionStartTime) return;
+    
+    const now = Date.now();
+    const studiedTime = Math.floor((now - state.sessionStartTime) / 1000); // Convert to seconds
+    
+    if (studiedTime > 0) {
+      try {
+        // Use stats store to record the session
+        await useStatsStore.getState().recordStudySession(studiedTime);
+        
+        // Update total studied today
+        set((prevState) => ({
+          totalStudiedToday: prevState.totalStudiedToday + studiedTime
+        }));
+        
+      } catch (error) {
+        console.error('Failed to record study session:', error);
+      }
+    }
   },
 }));

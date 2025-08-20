@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import { useStatsStore } from "@/stores/statsStore";
 import { authHelpers, convertSupabaseUser } from "@/lib/auth";
 import {
   Dialog,
@@ -31,16 +32,7 @@ interface SignUpFormData {
   confirmPassword: string;
 }
 
-// Example study data for the chart
-const studyData = [
-  { date: "Mon", hours: 2.5 },
-  { date: "Tue", hours: 4.2 },
-  { date: "Wed", hours: 3.8 },
-  { date: "Thu", hours: 5.1 },
-  { date: "Fri", hours: 3.3 },
-  { date: "Sat", hours: 6.7 },
-  { date: "Sun", hours: 4.9 },
-];
+
 
 const chartConfig = {
   hours: {
@@ -61,7 +53,19 @@ export function AuthModals() {
     switchToSignUp,
     switchToLogin,
     login,
+    user,
+    isAuthenticated,
   } = useAuthStore();
+
+  const {
+    dailyStats,
+    todayTotal,
+    isLoading,
+    error,
+    fetchDailyStats,
+    clearError,
+    getTodayStats,
+  } = useStatsStore();
 
   // Login form state
   const [loginForm, setLoginForm] = useState<LoginFormData>({
@@ -80,6 +84,20 @@ export function AuthModals() {
   // Form validation states
   const [loginErrors, setLoginErrors] = useState<Partial<LoginFormData>>({});
   const [signUpErrors, setSignUpErrors] = useState<Partial<SignUpFormData>>({});
+
+  // Fetch stats when chart modal opens and user is authenticated
+  useEffect(() => {
+    if (isChartModalOpen && user?.id) {
+      fetchDailyStats(user.id);
+    }
+  }, [isChartModalOpen, user?.id, fetchDailyStats]);
+
+  // Clear error when modals close
+  useEffect(() => {
+    if (!isChartModalOpen) {
+      clearError();
+    }
+  }, [isChartModalOpen, clearError]);
 
   // Handle login form submit
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -809,125 +827,198 @@ export function AuthModals() {
                 </p>
               </DialogHeader>
 
-              {/* Chart Container */}
-              <div className="w-full max-w-lg">
-                <ChartContainer
-                  config={chartConfig}
-                  className="h-[300px] w-full"
-                >
-                  <AreaChart
-                    data={studyData}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 20,
-                    }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id="fillHours"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="var(--color-hours)"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="var(--color-hours)"
-                          stopOpacity={0.1}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
+              {/* Stats Summary */}
+              {dailyStats.length > 0 && (
+                <div className="flex justify-center gap-8 mb-6">
+                  <div className="text-center">
+                    <div
                       style={{
-                        fontSize: "12px",
                         fontFamily: "var(--font-comfortaa)",
-                        fill: "#15142F",
+                        fontSize: "24px",
+                        color: "#15142F",
+                        fontWeight: "600",
                       }}
-                    />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      tickFormatter={(value) => `${value}h`}
+                    >
+                      {(getTodayStats().totalMinutes / 60).toFixed(1)}h
+                    </div>
+                    <div
                       style={{
-                        fontSize: "12px",
                         fontFamily: "var(--font-comfortaa)",
-                        fill: "#15142F",
+                        fontSize: "14px",
+                        color: "#15142F",
+                        fontWeight: "400",
                       }}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent indicator="line" />}
-                    />
-                    <Area
-                      dataKey="hours"
-                      type="natural"
-                      fill="url(#fillHours)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-hours)"
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ChartContainer>
+                    >
+                      Today
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div
+                      style={{
+                        fontFamily: "var(--font-comfortaa)",
+                        fontSize: "24px",
+                        color: "#15142F",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {dailyStats.reduce((total, stat) => total + (stat.totalMinutes / 60), 0).toFixed(1)}h
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-comfortaa)",
+                        fontSize: "14px",
+                        color: "#15142F",
+                        fontWeight: "400",
+                      }}
+                    >
+                      This Week
+                    </div>
+                  </div>
+                </div>
+              )}
 
-                {/* Chart Summary */}
-                <div className="mt-6 text-center">
-                  <p
+              {/* Chart Container */}
+              {isLoading ? (
+                <div className="w-full max-w-lg h-[300px] flex items-center justify-center">
+                  <div
                     style={{
                       fontFamily: "var(--font-comfortaa)",
-                      fontSize: "14px",
-                      color: "#15142F",
-                      fontWeight: "500",
-                    }}
-                  >
-                    Total this week:{" "}
-                    <span style={{ fontWeight: "600" }}>30.5 hours</span>
-                  </p>
-                  <p
-                    style={{
-                      fontFamily: "var(--font-comfortaa)",
-                      fontSize: "12px",
+                      fontSize: "16px",
                       color: "#15142F",
                       fontWeight: "400",
-                      marginTop: "4px",
                     }}
                   >
-                    Daily average: 4.4 hours
-                  </p>
+                    Loading your stats...
+                  </div>
                 </div>
-              </div>
+              ) : error ? (
+                <div className="w-full max-w-lg h-[300px] flex items-center justify-center">
+                  <div
+                    style={{
+                      fontFamily: "var(--font-comfortaa)",
+                      fontSize: "16px",
+                      color: "#E74C3C",
+                      fontWeight: "400",
+                    }}
+                  >
+                    Error loading stats: {error}
+                  </div>
+                </div>
+              ) : dailyStats.length === 0 ? (
+                <div className="w-full max-w-lg h-[300px] flex items-center justify-center text-center">
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-comfortaa)",
+                        fontSize: "18px",
+                        color: "#15142F",
+                        fontWeight: "500",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      Start Your Focus Journey
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-comfortaa)",
+                        fontSize: "14px",
+                        color: "#15142F",
+                        fontWeight: "400",
+                      }}
+                    >
+                      Your study statistics will appear here once you begin using the timer
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full max-w-lg">
+                  <ChartContainer
+                    config={chartConfig}
+                    className="h-[300px] w-full"
+                  >
+                    <AreaChart
+                      data={dailyStats.map(stat => ({
+                        date: stat.date,
+                        hours: parseFloat((stat.totalMinutes / 60).toFixed(1))
+                      }))}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 20,
+                      }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="fillHours"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="var(--color-hours)"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="var(--color-hours)"
+                            stopOpacity={0.1}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <XAxis
+                        dataKey="date"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        style={{
+                          fontSize: "12px",
+                          fill: "#15142F",
+                          fontFamily: "var(--font-comfortaa)",
+                        }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        style={{
+                          fontSize: "12px",
+                          fill: "#15142F",
+                          fontFamily: "var(--font-comfortaa)",
+                        }}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent />}
+                      />
+                      <Area
+                        dataKey="hours"
+                        type="natural"
+                        fill="url(#fillHours)"
+                        fillOpacity={0.4}
+                        stroke="var(--color-hours)"
+                        strokeWidth={2}
+                        dot={{
+                          fill: "var(--color-hours)",
+                          strokeWidth: 2,
+                          r: 4,
+                        }}
+                        activeDot={{
+                          r: 6,
+                          fill: "var(--color-hours)",
+                          strokeWidth: 2,
+                        }}
+                      />
+                    </AreaChart>
+                  </ChartContainer>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Floating Chart Button */}
-      <button
-        onClick={openChartModal}
-        className="fixed z-50 rounded-full border-none bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-200 hover:scale-105"
-        style={{
-          bottom: "20px",
-          right: "70px",
-          width: "60px",
-          height: "60px",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <ChartLine size={30} color="#15142F" />
-      </button>
     </>
   );
 }
