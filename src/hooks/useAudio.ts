@@ -1,27 +1,42 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Howl } from 'howler';
 import { usePlayerStore } from '@/stores/playerStore';
 
 export function useAudio() {
   const soundRef = useRef<Howl | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const {
     currentTrack,
     isPlaying,
     volume,
     playlist,
-    play,
-    pause,
     next,
     setCurrentTime,
     setDuration,
   } = usePlayerStore();
 
   const currentSong = playlist[currentTrack];
+
+  // Real audio progress tracking
+  const updateProgress = useCallback(() => {
+    if (!soundRef.current || !isPlaying) return;
+
+    try {
+      const seek = soundRef.current.seek();
+      const currentTime = typeof seek === 'number' ? seek : 0;
+      setCurrentTime(currentTime);
+
+      if (isPlaying && soundRef.current.playing()) {
+        requestAnimationFrame(updateProgress);
+      }
+    } catch (error) {
+      console.error('Progress update error:', error);
+    }
+  }, [isPlaying, setCurrentTime]);
 
   // Initialize or change track
   useEffect(() => {
@@ -95,26 +110,7 @@ export function useAudio() {
         soundRef.current.unload();
       }
     };
-  }, [currentTrack, currentSong]);
-
-  // Real audio progress tracking
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const updateProgress = () => {
-    if (!soundRef.current || !isPlaying) return;
-
-    try {
-      const seek = soundRef.current.seek();
-      const currentTime = typeof seek === 'number' ? seek : 0;
-      setCurrentTime(currentTime);
-
-      if (isPlaying && soundRef.current.playing()) {
-        requestAnimationFrame(updateProgress);
-      }
-    } catch (error) {
-      console.error('Progress update error:', error);
-    }
-  };
+  }, [currentTrack, currentSong, isPlaying, next, setDuration, volume, updateProgress]);
 
   // Handle play/pause changes
   useEffect(() => {

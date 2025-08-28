@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { Background } from '@/components/Layout/Background';
 import { Header } from '@/components/Layout/Header';
 import { TimerCard } from '@/components/Timer/TimerCard';
@@ -38,7 +38,9 @@ export default function Home() {
       <Background />
       
       {/* Header */}
-      <Header />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Header />
+      </Suspense>
       
       {/* Main Content */}
       <div className="flex flex-col items-center justify-center min-h-screen pt-20 pb-8 px-4 space-y-8">

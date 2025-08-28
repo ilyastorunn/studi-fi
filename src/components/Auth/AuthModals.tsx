@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { X, ChartLine } from "lucide-react";
+import { X } from "lucide-react";
 import {
   ChartConfig,
   ChartContainer,
@@ -49,17 +49,14 @@ export function AuthModals() {
     closeLoginModal,
     closeSignUpModal,
     closeChartModal,
-    openChartModal,
     switchToSignUp,
     switchToLogin,
     login,
     user,
-    isAuthenticated,
   } = useAuthStore();
 
   const {
     dailyStats,
-    todayTotal,
     isLoading,
     error,
     fetchDailyStats,

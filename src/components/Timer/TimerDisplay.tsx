@@ -63,7 +63,7 @@ export function TimerDisplay({ timeLeft }: TimerDisplayProps) {
     value: string, 
     setter: (value: number) => void, 
     max: number,
-    nextRef?: React.RefObject<HTMLInputElement>
+    nextRef?: React.RefObject<HTMLInputElement | null>
   ) => {
     // Allow empty values during editing
     if (value === '') {

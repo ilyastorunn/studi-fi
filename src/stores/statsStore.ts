@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase, type UserSession } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 interface DailyStats {
   date: string;

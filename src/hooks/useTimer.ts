@@ -6,7 +6,7 @@ import { TIMER_STATES, NOTIFICATION_TITLE, NOTIFICATION_BODY } from '@/lib/const
 
 export function useTimer() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { state, tick, complete } = useTimerStore();
+  const { state, tick } = useTimerStore();
 
   // Request notification permission on mount
   useEffect(() => {

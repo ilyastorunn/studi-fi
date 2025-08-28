@@ -30,7 +30,7 @@ export const adminHelpers = {
     const fileExt = file.name.split('.').pop()
     const filePath = `${fileName}.${fileExt}`
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('songs')
       .upload(filePath, file, {
         cacheControl: '3600',
@@ -61,7 +61,7 @@ export const adminHelpers = {
     const fileExt = file.name.split('.').pop()
     const filePath = `${fileName}.${fileExt}`
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('covers')
       .upload(filePath, file, {
         cacheControl: '3600',

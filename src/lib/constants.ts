@@ -57,4 +57,12 @@ export const PLAYLIST = [
 ] as const;
 
 export type TimerState = typeof TIMER_STATES[keyof typeof TIMER_STATES];
-export type Track = typeof PLAYLIST[number];
+
+export interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  duration: number;
+  src: string;
+  cover: string;
+}

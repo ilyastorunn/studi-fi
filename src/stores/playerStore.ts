@@ -49,7 +49,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   progress: 0,
   duration: 0,
   currentTime: 0,
-  playlist: PLAYLIST,
+  playlist: PLAYLIST as unknown as Track[],
   useSupabaseSongs: false,
 
   // Play current track
@@ -152,7 +152,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     if (useSupabaseSongs) {
       // Switch back to default playlist
       set({ 
-        playlist: PLAYLIST,
+        playlist: PLAYLIST as unknown as Track[],
         currentTrack: 0,
         progress: 0,
         currentTime: 0,

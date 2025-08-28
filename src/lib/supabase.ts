@@ -1,9 +1,22 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create Supabase client with fallback for development
+let supabaseClient;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Missing Supabase environment variables. Using mock client for development.')
+  // Use mock values for development
+  const mockUrl = 'https://mock.supabase.co'
+  const mockKey = 'mock-key'
+  supabaseClient = createClient(mockUrl, mockKey)
+} else {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+}
+
+export const supabase = supabaseClient
 
 // Database Types
 export interface Database {

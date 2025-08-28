@@ -15,7 +15,7 @@ interface MusicStore {
   clearError: () => void;
 }
 
-export const useMusicStore = create<MusicStore>((set, get) => ({
+export const useMusicStore = create<MusicStore>((set) => ({
   // Initial state
   songs: [],
   isLoading: false,
@@ -27,9 +27,9 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
       set({ isLoading: true, error: null });
       const songs = await adminHelpers.getAllSongs();
       set({ songs, isLoading: false });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({ 
-        error: error.message || 'Failed to fetch songs',
+        error: error instanceof Error ? error.message : 'Failed to fetch songs',
         isLoading: false 
       });
     }

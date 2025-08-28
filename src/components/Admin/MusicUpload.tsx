@@ -44,7 +44,7 @@ export function MusicUpload() {
           <AlertCircle className="text-red-500" size={24} />
           <div>
             <h3 className="font-semibold text-red-800">Access Denied</h3>
-            <p className="text-red-600">You don't have permission to upload music.</p>
+            <p className="text-red-600">You don&apos;t have permission to upload music.</p>
           </div>
         </div>
       </Card>
@@ -136,11 +136,11 @@ export function MusicUpload() {
         setUploadState(prev => ({ ...prev, success: false }));
       }, 3000);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       setUploadState({
         isUploading: false,
         progress: 0,
-        error: error.message || 'Upload failed. Please try again.',
+        error: error instanceof Error ? error.message : 'Upload failed. Please try again.',
         success: false,
       });
     }
