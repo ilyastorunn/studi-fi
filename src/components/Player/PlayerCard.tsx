@@ -141,7 +141,7 @@ export function PlayerCard() {
           {showVolumeSlider && (
             <div className="absolute left-0 right-10 h-full flex items-center">
               {/* Actual bar with bigger hit area */}
-              <div className="w-full h-2 bg-white/30 rounded-full relative">
+              <div className="w-full h-2 bg-black rounded-full relative">
                 {/* Volume Fill */}
                 <div 
                   className="h-full bg-[#9A61EA] rounded-full transition-all duration-200"
