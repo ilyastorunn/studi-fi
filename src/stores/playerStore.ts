@@ -8,7 +8,7 @@ function convertSongToTrack(song: Song): Track {
   return {
     id: song.id,
     title: song.name,
-    artist: song.artist,
+    artist: song.artist || 'Unknown Artist', // Handle undefined case
     duration: song.duration,
     src: song.file_url,
     cover: song.cover_url || '/cover.jpeg'

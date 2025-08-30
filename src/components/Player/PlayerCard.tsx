@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { usePlayerStore } from '@/stores/playerStore';
-import { useMusicStore } from '@/stores/musicStore';
 import { useAudio } from '@/hooks/useAudio';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';

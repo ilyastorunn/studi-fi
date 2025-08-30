@@ -4,7 +4,7 @@ import type { Song } from './supabase'
 export interface MusicUpload {
   file: File
   name: string
-  artist: string
+  artist?: string // Made optional to match addSong function
   cover?: File
 }
 
