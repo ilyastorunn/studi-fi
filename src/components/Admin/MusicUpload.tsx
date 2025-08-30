@@ -90,10 +90,10 @@ export function MusicUpload() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.artist || !formData.file) {
+    if (!formData.name || !formData.file) {
       setUploadState(prev => ({
         ...prev,
-        error: 'Please fill in all required fields and select an audio file'
+        error: 'Please fill in song name and select an audio file'
       }));
       return;
     }
@@ -109,7 +109,7 @@ export function MusicUpload() {
       await adminHelpers.uploadMusic({
         file: formData.file,
         name: formData.name,
-        artist: formData.artist,
+        artist: formData.artist || undefined,
         cover: formData.cover || undefined,
       });
 
@@ -252,7 +252,7 @@ export function MusicUpload() {
               display: 'block',
             }}
           >
-            Artist Name *
+            Artist Name (Optional)
           </label>
           <Input
             type="text"
@@ -327,6 +327,7 @@ export function MusicUpload() {
             <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-comfortaa)' }}>
               Click to select cover image
             </p>
+            <p className="text-xs text-gray-500 mt-1">If no cover is selected, default cover will be used</p>
           </div>
           <input
             ref={coverInputRef}
@@ -359,7 +360,7 @@ export function MusicUpload() {
           
           <Button
             type="submit"
-            disabled={uploadState.isUploading || !formData.name || !formData.artist || !formData.file}
+            disabled={uploadState.isUploading || !formData.name || !formData.file}
             style={{
               backgroundColor: '#4A90E2',
               borderRadius: '25px',

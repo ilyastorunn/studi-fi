@@ -104,7 +104,7 @@ export const adminHelpers = {
   // Add song to database (using authenticated admin user)
   async addSong(songData: {
     name: string
-    artist: string
+    artist?: string // Made optional
     duration: number
     file_url: string
     cover_url?: string
@@ -180,11 +180,14 @@ export const adminHelpers = {
       // Upload music file
       const fileUrl = await this.uploadMusicFile(file, fileName)
       
-      // Upload cover if provided
-      let coverUrl: string | undefined
-      if (cover) {
-        coverUrl = await this.uploadCoverImage(cover, `${fileName}_cover`)
-      }
+              // Upload cover if provided, otherwise use default
+        let coverUrl: string | undefined
+        if (cover) {
+          coverUrl = await this.uploadCoverImage(cover, `${fileName}_cover`)
+        } else {
+          // Use default cover for all songs
+          coverUrl = '/cover.jpeg'
+        }
       
       // Add to database
       const song = await this.addSong({

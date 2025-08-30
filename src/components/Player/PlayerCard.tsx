@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePlayerStore } from '@/stores/playerStore';
+import { useMusicStore } from '@/stores/musicStore';
 import { useAudio } from '@/hooks/useAudio';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -35,8 +36,6 @@ export function PlayerCard() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-
-
   const handleVolumeChange = (value: number[]) => {
     const newVolume = value[0];
     setVolume(newVolume);
@@ -55,7 +54,7 @@ export function PlayerCard() {
       {/* Cover Photo - Sol kenarda 24px uzaklıkta */}
       <div className="flex-shrink-0">
         <Image
-          src={currentSong?.cover || "/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg"}
+          src={currentSong?.cover || "/cover.jpeg"}
           alt={`${currentSong?.title || 'Track'} Cover`}
           width={110}
           height={110}
@@ -73,12 +72,14 @@ export function PlayerCard() {
           >
             {currentSong?.title || 'No Track'}
           </h3>
-          <p 
-            className="text-sm text-[#15142F]/70"
-            style={{ fontFamily: 'var(--font-comfortaa)' }}
-          >
-            {currentSong?.artist || 'Unknown Artist'}
-          </p>
+          {currentSong?.artist && (
+            <p 
+              className="text-sm text-[#15142F]/70"
+              style={{ fontFamily: 'var(--font-comfortaa)' }}
+            >
+              {currentSong.artist}
+            </p>
+          )}
         </div>
 
         {/* Player Controls */}
@@ -129,8 +130,6 @@ export function PlayerCard() {
           {formatTime(currentTime || 0)}/{formatTime(duration || currentSong?.duration || 0)}
         </div>
 
-
-
         {/* Volume Control with Horizontal Slider */}
         <div 
           className="relative flex items-center w-28 h-10 justify-end"
@@ -141,11 +140,14 @@ export function PlayerCard() {
           {showVolumeSlider && (
             <div className="absolute left-0 right-10 h-full flex items-center">
               {/* Actual bar with bigger hit area */}
-              <div className="w-full h-2 bg-black rounded-full relative">
+              <div className="w-full h-2 bg-black/20 rounded-full relative">
                 {/* Volume Fill */}
                 <div 
-                  className="h-full bg-[#9A61EA] rounded-full transition-all duration-200"
-                  style={{ width: `${volume}%` }}
+                  className="h-full rounded-full transition-all duration-200"
+                  style={{ 
+                    width: `${volume}%`,
+                    backgroundColor: '#8A4FFF'
+                  }}
                 />
                 {/* Invisible slider for interaction */}
                 <Slider

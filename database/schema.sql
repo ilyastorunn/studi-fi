@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS public.songs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    artist TEXT NOT NULL,
+    artist TEXT, -- Removed NOT NULL constraint
     duration INTEGER NOT NULL, -- in seconds
     file_url TEXT NOT NULL,
     cover_url TEXT,

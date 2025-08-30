@@ -42,3 +42,15 @@ CREATE POLICY "Admin can delete songs" ON public.songs
     FOR DELETE USING (
         auth.jwt() ->> 'email' = 'ilyastorunn@outlook.com'
     );
+
+-- Migration: Make artist column nullable in songs table
+-- This allows songs to be uploaded without an artist name
+
+-- First, drop any existing constraints that might prevent the change
+ALTER TABLE public.songs ALTER COLUMN artist DROP NOT NULL;
+
+-- Update existing songs that might have empty strings to NULL
+UPDATE public.songs SET artist = NULL WHERE artist = '';
+
+-- Add a comment to document the change
+COMMENT ON COLUMN public.songs.artist IS 'Artist name (optional) - can be NULL for instrumental tracks or tracks without artist info';

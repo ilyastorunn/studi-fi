@@ -13,6 +13,9 @@ interface MusicStore {
   addSong: (song: Song) => void;
   removeSong: (songId: string) => void;
   clearError: () => void;
+  
+  // Utilities
+  getSongWithDefaultCover: (song: Song) => Song;
 }
 
 export const useMusicStore = create<MusicStore>((set) => ({
@@ -52,5 +55,13 @@ export const useMusicStore = create<MusicStore>((set) => ({
   // Clear error message
   clearError: () => {
     set({ error: null });
+  },
+  
+  // Get song with default cover if none exists
+  getSongWithDefaultCover: (song: Song) => {
+    return {
+      ...song,
+      cover_url: song.cover_url || '/cover.jpeg'
+    };
   },
 }));

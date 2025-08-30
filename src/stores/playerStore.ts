@@ -11,7 +11,7 @@ function convertSongToTrack(song: Song): Track {
     artist: song.artist,
     duration: song.duration,
     src: song.file_url,
-    cover: song.cover_url || '/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg'
+    cover: song.cover_url || '/cover.jpeg'
   };
 }
 

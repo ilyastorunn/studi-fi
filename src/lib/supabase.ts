@@ -26,7 +26,7 @@ export interface Database {
         Row: {
           id: string
           name: string
-          artist: string
+          artist?: string // Made optional
           duration: number
           file_url: string
           cover_url?: string
@@ -36,7 +36,7 @@ export interface Database {
         Insert: {
           id?: string
           name: string
-          artist: string
+          artist?: string // Made optional
           duration: number
           file_url: string
           cover_url?: string
@@ -46,7 +46,7 @@ export interface Database {
         Update: {
           id?: string
           name?: string
-          artist?: string
+          artist?: string // Made optional
           duration?: number
           file_url?: string
           cover_url?: string

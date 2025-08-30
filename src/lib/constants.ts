@@ -44,7 +44,7 @@ export const PLAYLIST = [
     artist: 'Chill Collective',
     duration: 180, // Will be auto-detected
     src: '/lofi1.mp3',
-    cover: '/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg'
+    cover: '/cover.jpeg'
   },
   {
     id: 'lofi2',
@@ -52,7 +52,7 @@ export const PLAYLIST = [
     artist: 'Lo-fi Dreams',
     duration: 200, // Will be auto-detected
     src: '/lofi2.mp3',
-    cover: '/artworks-oDOPZzziMpEO5irq-3elwrg-t500x500.jpg'
+    cover: '/cover.jpeg'
   }
 ] as const;
 

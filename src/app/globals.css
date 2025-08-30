@@ -248,6 +248,25 @@
     background: transparent !important;
   }
 
+  /* Custom Volume Slider Styling */
+  .volume-slider [data-slot="slider-track"] {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  .volume-slider [data-slot="slider-range"] {
+    background-color: #8A4FFF !important;
+  }
+  
+  .volume-slider [data-slot="slider-thumb"] {
+    background-color: #8A4FFF !important;
+    border-color: #8A4FFF !important;
+    box-shadow: 0 0 0 2px rgba(138, 79, 255, 0.2) !important;
+  }
+  
+  .volume-slider [data-slot="slider-thumb"]:hover {
+    box-shadow: 0 0 0 4px rgba(138, 79, 255, 0.3) !important;
+  }
+
   @media (max-width: 768px) {
     .timer-display {
       font-size: 48px;
